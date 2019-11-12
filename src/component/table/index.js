@@ -3,21 +3,35 @@ import { ChromePicker } from "react-color"
 import "./index.css"
 
 export default class Table extends React.Component {
-
     // @constructor
     // @param {object} _sorts
     // @param {array} _lists
     constructor (props) {
         super(props)
-        this._sorts = {}
         this._lists = []
-        this.state = {
-            keys: []
-        }
+        this._resetSorts(props)
     }
 
     static getDerivedStateFromProps (nextProps) {
-        console.log(nextProps)
+        return {
+            keys: nextProps.keys.map(value => Object.assign(value, {
+                show: false
+            }))
+        }
+    }
+
+    componentDidUpdate() {
+        this._resetSorts(this.props)
+    }
+
+    // Reset this._sorts
+    // @param {object} props
+    // @private
+    _resetSorts (props) {
+        this._sorts = {}
+        props.keys.forEach((value, index) => {
+            this._sorts[value.key] = index
+        })
     }
     
     // UID
@@ -30,22 +44,7 @@ export default class Table extends React.Component {
             Date.now()
         ].join("-")
     }
-    
-    // 排序
-    // @private
-    _sort () {
-        this._sorts = {}
-        this.props.keys.forEach((value, index) => {
-            this._sorts[value.key] = index
-        })
-        
-        this.setState({
-            keys: this.props.keys.map(value => Object.assign(value, {
-                show: false
-            }))
-        }) 
-    }
-    
+
     // 列表数据清洗
     // @private
     _dynList () {
@@ -160,14 +159,15 @@ export default class Table extends React.Component {
     // 头部点击
     // @private
     _key_click (value, index) {
-        this.state.keys[index].show = !value.show
-        this.setState({ keys: this.state.keys })
+        this.setState((state) => {
+            state.keys[index].show = !value.show
+            return state
+        })
     }
     
     // 头部
     // @private
     _keys () {
-        this._sort()
         return <div className="keys">{ 
             this.state.keys.map((value, index) => {
                 return <div 
